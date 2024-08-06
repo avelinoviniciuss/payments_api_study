@@ -2,8 +2,14 @@
 This file contains the API endpoints for payment service.
 """
 from flask import Flask, jsonify
+from connections.database import db
+from db_models.payment import Payment
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SECRET_KEY'] = 'SECRET_KEY_WEBSOCKET'
+
+db.init_app(app)
 
 
 @app.route('/payments/pix', methods=['POST'])
