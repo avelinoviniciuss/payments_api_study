@@ -1,7 +1,7 @@
 """
 This file contains the API endpoints for payment service.
 """
-from flask import Flask, jsonify, request, send_file
+from flask import Flask, jsonify, request, send_file, render_template, send_from_directory
 from connections.database import db
 from db_models.payment import Payment
 from datetime import datetime, timedelta
@@ -61,6 +61,17 @@ def confirm_pix_payment():
     return jsonify({'PIX payment has been confirmed successfully!'})
 
 
+@app.route('/resources/<path:filename>')
+def resources(filename):
+    """
+    Get a resource file.
+    :param filename:
+    :return:
+    resource file
+    """
+    return send_from_directory('resources', filename)
+
+
 @app.route('/payments/pix/<int:payment_id>', methods=['GET'])
 def get_pix_payment(payment_id):
     """
@@ -70,7 +81,16 @@ def get_pix_payment(payment_id):
     :return:
     json response with the PIX payment data
     """
-    return jsonify({'payment_id': payment_id, 'status': 'paid'})
+    payment = Payment.query.get(payment_id)
+
+    if payment is None:
+        return jsonify({'error': 'Payment not found'}), 404
+
+    return render_template('payment.html',
+                           payment_id=payment.id,
+                           value=payment.value,
+                           host='http://127.0.0.1:5000',
+                           qrcode=payment.qr_code)
 
 
 if __name__ == '__main__':
